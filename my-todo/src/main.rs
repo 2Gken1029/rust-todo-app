@@ -45,12 +45,11 @@ async fn root() -> &'static str{
 mod test {
     use super::*;
     use crate::repositories::{CreateTodo, Todo};
-    use axum::http::method;
     use axum::response::Response;
     use axum::{
         body::Body, 
         http::{header, Method, Request, StatusCode}};
-    use tower::{ServiceExt, builder};
+    use tower::ServiceExt;
 
     fn build_todo_req_with_json(path: &str, method: Method, json_body: String) -> Request<Body> {
         Request::builder()
@@ -83,7 +82,7 @@ mod test {
         let req = build_todo_req_with_json(
             "/todos",
             Method::POST, 
-            r#"{ "text": "should_return_created_todo}"#.to_string(),
+            r#"{ "text": "should_return_created_todo"}"#.to_string(),
         );
         let res = create_app(repository).oneshot(req).await.unwrap();
         let todo = res_to_todo(res).await;
@@ -94,6 +93,7 @@ mod test {
     async fn should_find_todo() {
         let expected = Todo::new(1, "should_return_find_todo".to_string());
         let repository = TodoRepositoryForMemory::new();
+        repository.create(CreateTodo::new("should_return_find_todo".to_string()));
         let req = build_todo_req_with_empty(
             Method::GET,
             "/todos/1"
@@ -107,6 +107,7 @@ mod test {
     async fn should_get_all_todos() {
         let expected = Todo::new(1, "should_get_all_todos".to_string());
         let repository = TodoRepositoryForMemory::new();
+        repository.create(CreateTodo::new("should_get_all_todos".to_string()));
         let req = build_todo_req_with_empty(
             Method::GET, 
             "/todos"
